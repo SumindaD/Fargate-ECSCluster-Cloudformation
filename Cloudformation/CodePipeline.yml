@@ -1,0 +1,176 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: The CloudFormation template for the CodePipeline.
+
+Parameters:
+  Stage:
+    Type: String
+    Default: dev
+  GithubUserName:
+    Type: String
+    Default: SumindaD
+  GithubRepo:
+    Type: String
+    Default: nodejs-docker-hello-world
+  GithubBranch:
+    Type: String
+    Default: master
+  GithubOAuthToken:
+    Type: String
+    Default: 428203e621688a5806f1c0207b066d1e79208562
+  Region:
+    Type: String
+    Default: eu-west-1
+  ContainerPort:
+    Type: Number
+    Default: 8080
+
+Resources:
+
+  # Create an ECR Repository to store docker images
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'ecr-repository']]
+
+  # Create an S3 Bucket to store build artifacts
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 's3bucket']]
+
+  # Create Access Role for CodePipeLine
+  CodePipeLineExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AdministratorAccess'
+
+  # Create Access Role for CodeBuild
+  CodeBuildExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codebuild.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  # Create Access Role for Cloudformation
+  CloudformationExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudformation.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AdministratorAccess'
+
+  # Create the BuildProject with required Build information
+  BuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties: 
+      Artifacts: 
+        Type: CODEPIPELINE
+      Environment: 
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:2.0
+        ImagePullCredentialsType: CODEBUILD
+        PrivilegedMode: True
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: ECR_REPOSITORY_URI
+            Value: !Join [ ".", [ !Ref "AWS::AccountId", "dkr.ecr", !Ref "AWS::Region", !Join [ "/", [ "amazonaws.com", !Ref "ECRRepository" ] ] ] ]
+      Name: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'BuildProject']]
+      ServiceRole: !Ref CodeBuildExecutionRole
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec.yml # This file (In Source code) contains commands to Create and Push a docker image to the ECR_REPOSITORY_URI
+      #SourceVersion: !Ref GithubBranch
+
+  # Create CodePipeline with 3 stages (Source, Build and Deploy)
+  CodePipeLine:
+    Type: AWS::CodePipeline::Pipeline
+    Properties: 
+      ArtifactStore: 
+        Location: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 's3bucket']]
+        Type: S3
+      Name: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'CodePipeLine']]
+      RestartExecutionOnUpdate: False
+      RoleArn: 
+        Fn::GetAtt: [ CodePipeLineExecutionRole, Arn ]
+      Stages:
+
+        # Download source code from Github Repo to source-output-artifacts path in S3 Bucket
+        - Name: Source
+          Actions: 
+          - Name: Source
+            ActionTypeId: 
+              Category: Source
+              Owner: ThirdParty
+              Provider: GitHub
+              Version: 1
+            Configuration:
+              Repo: !Ref GithubRepo
+              Branch: !Ref GithubBranch
+              Owner: !Ref GithubUserName
+              OAuthToken: !Ref GithubOAuthToken
+            Region: !Ref Region
+            RunOrder: 1
+            OutputArtifacts:
+              - Name: source-output-artifacts
+        
+        # Build the project using the BuildProject and Output build artifacts to build-output-artifacts path in S3 Bucket
+        - Name: Build
+          Actions:
+          - Name: Build
+            ActionTypeId:
+              Category: Build
+              Owner: AWS
+              Version: 1
+              Provider: CodeBuild
+            OutputArtifacts:
+              - Name: build-output-artifacts
+            InputArtifacts:
+              - Name: source-output-artifacts
+            Configuration:
+                ProjectName: !Ref BuildProject
+            RunOrder: 1
+
+        # Deploy the project by executing Fargate-Cluster.yml file in the Source code with Cloudformation.
+        - Name: Deploy
+          Actions:
+          - Name: Deploy
+            ActionTypeId:
+              Category: Deploy
+              Owner: AWS
+              Version: 1
+              Provider: CloudFormation
+            InputArtifacts:
+              - Name: source-output-artifacts
+              - Name: build-output-artifacts
+            Configuration:
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_NAMED_IAM
+                ParameterOverrides: !Sub |
+                  {
+                    "ImageURI" : { "Fn::GetParam" : ["build-output-artifacts", "imageDetail.json", "ImageURI"] },
+                    "Stage":  "${Stage}",
+                    "ContainerPort": "${ContainerPort}"
+                  }
+                RoleArn: 
+                  Fn::GetAtt: [ CloudformationExecutionRole, Arn ]
+                StackName: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'FargateECSCluster']]
+                TemplatePath: source-output-artifacts::Cloudformation/Fargate-Cluster.yml
+            RunOrder: 1
