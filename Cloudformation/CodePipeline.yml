@@ -10,13 +10,13 @@ Parameters:
     Default: SumindaD
   GithubRepo:
     Type: String
-    Default: nodejs-docker-hello-world
+    Default: Fargate-ECSCluster-Cloudformation
   GithubBranch:
     Type: String
     Default: master
   GithubOAuthToken:
     Type: String
-    Default: 428203e621688a5806f1c0207b066d1e79208562
+    Default: <Github Access Token>
   Region:
     Type: String
     Default: eu-west-1
