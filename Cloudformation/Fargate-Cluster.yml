@@ -172,7 +172,7 @@ Resources:
       Port: 80
       Protocol: HTTP
 
-  # Create an ECS Service and add created Cluster, Subnets, TargetGroup and SecurityGroup
+  # Create an ECS Service and add created Cluster, TaskDefintion, Subnets, TargetGroup and SecurityGroup
   ECSService:
     Type: AWS::ECS::Service
     DependsOn: LoadBalancerListener

@@ -96,8 +96,8 @@ Resources:
       ServiceRole: !Ref CodeBuildExecutionRole
       Source:
         Type: CODEPIPELINE
-        BuildSpec: buildspec.yml # This file (In Source code) contains commands to Create and Push a docker image to the ECR_REPOSITORY_URI
-      #SourceVersion: !Ref GithubBranch
+        # This file (buildspec.yml In Source code) contains commands to Create and Push a docker image to the ECR_REPOSITORY_URI
+        BuildSpec: buildspec.yml
 
   # Create CodePipeline with 3 stages (Source, Build and Deploy)
   CodePipeLine:
@@ -163,6 +163,7 @@ Resources:
             Configuration:
                 ActionMode: CREATE_UPDATE
                 Capabilities: CAPABILITY_NAMED_IAM
+                # Pass parameter values to Fargate-Cluster.yml for deployment
                 ParameterOverrides: !Sub |
                   {
                     "ImageURI" : { "Fn::GetParam" : ["build-output-artifacts", "imageDetail.json", "ImageURI"] },
