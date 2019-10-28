@@ -180,7 +180,7 @@ Resources:
       ServiceName: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'ECSService']]
       Cluster: !Ref Cluster
       TaskDefinition: !Ref TaskDefinition
-      DesiredCount: 1
+      DesiredCount: 2
       LaunchType: FARGATE
       NetworkConfiguration: 
         AwsvpcConfiguration:
