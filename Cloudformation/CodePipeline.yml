@@ -108,10 +108,11 @@ Resources:
         Type: S3
       Name: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'CodePipeLine']]
       RestartExecutionOnUpdate: False
-      RoleArn: !Ref CodePipeLineExecutionRole
-      
+      RoleArn: 
+        Fn::GetAtt: [ CodePipeLineExecutionRole, Arn ]
+        
       Stages:
-      
+
         # Download source code from Github Repo to source-output-artifacts path in S3 Bucket
         - Name: Source
           Actions: 
