@@ -19,7 +19,7 @@ Parameters:
     Default: <GITHUB ACCESS TOKEN>
   Region:
     Type: String
-    Default: <REGION>
+    Default: eu-west-1
   ContainerPort:
     Type: Number
     Default: 8080
