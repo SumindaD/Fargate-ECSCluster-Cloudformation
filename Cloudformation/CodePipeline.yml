@@ -7,19 +7,19 @@ Parameters:
     Default: dev
   GithubUserName:
     Type: String
-    Default: SumindaD
+    Default: <USERNAME>
   GithubRepo:
     Type: String
     Default: Fargate-ECSCluster-Cloudformation
   GithubBranch:
     Type: String
-    Default: master
+    Default: <BRANCH>
   GithubOAuthToken:
     Type: String
-    Default: <Github Access Token>
+    Default: <GITHUB ACCESS TOKEN>
   Region:
     Type: String
-    Default: eu-west-1
+    Default: <REGION>
   ContainerPort:
     Type: Number
     Default: 8080
