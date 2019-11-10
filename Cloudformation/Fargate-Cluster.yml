@@ -8,9 +8,6 @@ Parameters:
     Type: Number
   ImageURI:
     Type: String
-  Region:
-    Type: String
-    Default: eu-west-1
 
 Resources:
 
@@ -34,7 +31,7 @@ Resources:
     Properties:
       CidrBlock: 172.10.1.0/24
       VpcId: !Ref VPC
-      AvailabilityZone: !Join ['', [!Ref Region, 'a']]
+      AvailabilityZone: !Join ['', [!Ref "AWS::Region", 'a']]
 
   # Create a Subnet
   SubnetB:
@@ -42,7 +39,7 @@ Resources:
     Properties:
       CidrBlock: 172.10.2.0/24
       VpcId: !Ref VPC
-      AvailabilityZone: !Join ['', [!Ref Region, 'b']]
+      AvailabilityZone: !Join ['', [!Ref "AWS::Region", 'b']]
 
   # Create a route table to allow access to internet
   PublicRouteTable:
