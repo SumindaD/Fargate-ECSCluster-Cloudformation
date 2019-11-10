@@ -19,7 +19,7 @@ Parameters:
     Default: <GITHUB ACCESS TOKEN>
   Region:
     Type: String
-    Default: eu-west-1
+    Default: <REGION>
   ContainerPort:
     Type: Number
     Default: 8080
@@ -128,7 +128,6 @@ Resources:
               Branch: !Ref GithubBranch
               Owner: !Ref GithubUserName
               OAuthToken: !Ref GithubOAuthToken
-            Region: !Ref Region
             RunOrder: 1
             OutputArtifacts:
               - Name: source-output-artifacts
@@ -170,7 +169,8 @@ Resources:
                   {
                     "ImageURI" : { "Fn::GetParam" : ["build-output-artifacts", "imageDetail.json", "ImageURI"] },
                     "Stage":  "${Stage}",
-                    "ContainerPort": "${ContainerPort}"
+                    "ContainerPort": "${ContainerPort}",
+                    "Region": "${Region}"
                   }
                 RoleArn: 
                   Fn::GetAtt: [ CloudformationExecutionRole, Arn ]
