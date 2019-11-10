@@ -7,7 +7,7 @@ Parameters:
     Default: dev
   GithubUserName:
     Type: String
-    Default: <USERNAME
+    Default: <USERNAME>
   GithubRepo:
     Type: String
     Default: Fargate-ECSCluster-Cloudformation
