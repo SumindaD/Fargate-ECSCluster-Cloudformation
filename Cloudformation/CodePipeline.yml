@@ -173,3 +173,10 @@ Resources:
                 StackName: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'FargateECSCluster']]
                 TemplatePath: source-output-artifacts::Cloudformation/Fargate-Cluster.yml
             RunOrder: 1
+
+Outputs:
+  ECRRepository:
+    Description: ECRRepository
+    Value: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'ecr-repository']]
+    Export:
+        Name: !Sub "${AWS::StackName}-ECRRepository"

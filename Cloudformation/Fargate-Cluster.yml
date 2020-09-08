@@ -194,3 +194,9 @@ Resources:
         - ContainerName: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'Container']]
           ContainerPort: !Ref ContainerPort
           TargetGroupArn: !Ref TargetGroup
+
+Outputs:
+  ECRRepository:
+    Description: ECRRepository
+    Value: 
+      - Fn::ImportValue: test-stack-ECRRepository
