@@ -198,5 +198,4 @@ Resources:
 Outputs:
   ECRRepository:
     Description: ECRRepository
-    Value: 
-      - Fn::ImportValue: test-stack-ECRRepository
+    Value: !ImportValue test-stack-ECRRepository
