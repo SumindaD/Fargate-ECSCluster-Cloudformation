@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: The CloudFormation template for the CodePipeline.
+Description: The CloudFormation template for the CodePipeline. Make changes here
 
 Parameters:
   Stage:
