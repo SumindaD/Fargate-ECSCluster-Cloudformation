@@ -4,19 +4,19 @@ Description: The CloudFormation template for the CodePipeline.
 Parameters:
   Stage:
     Type: String
-    Default: dev
+    Default: main
   GithubUserName:
     Type: String
-    Default: <USERNAME>
+    Default: sys-2077
   GithubRepo:
     Type: String
     Default: Fargate-ECSCluster-Cloudformation
   GithubBranch:
     Type: String
-    Default: <BRANCH>
+    Default: test
   GithubOAuthToken:
     Type: String
-    Default: <GITHUB ACCESS TOKEN>
+    Default: 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
   ContainerPort:
     Type: Number
     Default: 8080
